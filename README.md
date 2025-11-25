@@ -1,21 +1,12 @@
 # TokoKita
 
-TokoKita adalah aplikasi Flutter yang dirancang untuk mengelola produk di sebuah toko. Aplikasi ini menyediakan fitur untuk autentikasi pengguna (login dan registrasi), melihat daftar produk, menambah/mengedit detail produk, dan menghapus produk. Aplikasi berkomunikasi dengan API backend untuk operasi data.
-
-## Fitur
-
-- Login dan registrasi pengguna
-- Melihat daftar produk
-- Menambah produk baru
-- Mengedit produk yang ada
-- Melihat detail produk
-- Menghapus produk
+TokoKita adalah aplikasi Flutter yang dirancang untuk mengelola produk di sebuah toko. Aplikasi ini menyediakan fitur untuk melihat daftar produk, menambah/mengedit detail produk, dan menghapus produk.
 
 ## Halaman
 
 ### Halaman Daftar Produk
 
-![Daftar Produk](list.png)
+<img src="list.png" width="300">
 
 Halaman ini menampilkan daftar semua produk yang diambil dari API. Pengguna dapat menyegarkan daftar, mengetuk produk untuk melihat detail, atau menambah produk baru menggunakan ikon '+' di app bar.
 
@@ -28,7 +19,7 @@ Komponen kode utama:
 
 ### Halaman Detail Produk
 
-![Detail Produk](detail.png)
+<img src="detail.png" width="300">
 
 Halaman ini menunjukkan informasi detail tentang produk yang dipilih, termasuk kode, nama, dan harga. Pengguna dapat mengedit atau menghapus produk dari halaman ini.
 
@@ -41,7 +32,7 @@ Komponen kode utama:
 
 ### Halaman Form Produk (Tambah Produk)
 
-![Tambah Produk](tambah.png)
+<img src="tambah.png" width="300">
 
 Halaman ini digunakan untuk menambah produk baru. Pengguna mengisi kode produk, nama, dan harga. Form memvalidasi bahwa semua field diisi sebelum mengirim.
 
@@ -54,7 +45,7 @@ Komponen kode utama:
 
 ### Halaman Form Produk (Edit Produk)
 
-![Edit Produk](ubah.png)
+<img src="ubah.png" width="300">
 
 Halaman ini digunakan untuk mengedit produk yang ada. Form diisi sebelumnya dengan data produk saat ini. Pengguna dapat memodifikasi field dan menyimpan perubahan.
 
@@ -62,21 +53,3 @@ Komponen kode utama:
 - Mirip dengan form tambah, tetapi menginisialisasi controller dengan data yang ada di `initState()`.
 - Memanggil `ApiService.updateProduk()` dengan ID produk dan data yang diperbarui.
 - Logika validasi dan pengiriman identik dengan form tambah.
-
-## Memulai
-
-Untuk menjalankan proyek ini:
-
-1. Pastikan Flutter sudah terinstal.
-2. Clone repositori.
-3. Jalankan `flutter pub get` untuk menginstal dependensi.
-4. Konfigurasi endpoint API di `lib/config.dart`.
-5. Jalankan `flutter run` untuk memulai aplikasi.
-
-## Dependensi
-
-- Flutter SDK
-- Paket HTTP untuk panggilan API
-- Paket Flutter standar lainnya
-
-Untuk detail lebih lanjut, lihat kode di direktori `lib/`.
