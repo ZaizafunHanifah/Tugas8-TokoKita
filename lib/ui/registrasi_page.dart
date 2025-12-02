@@ -1,8 +1,8 @@
 // lib/ui/registrasi_page.dart
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
 import '../widgets/warning_dialog.dart';
-import '../model/registrasi.dart';
+import '../widgets/success_dialog.dart';
+import '../bloc/registrasi bloc.dart';
 
 class RegistrasiPage extends StatefulWidget {
   const RegistrasiPage({Key? key}) : super(key: key);
@@ -22,39 +22,118 @@ class _RegistrasiPageState extends State<RegistrasiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Registrasi ZAZA"),
-        leading: const Icon(Icons.person_add),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _namaTextboxController,
-                  decoration: const InputDecoration(labelText: "Nama"),
-                  validator: (v) => v != null && v.length >= 3 ? null : "Nama minimal 3 karakter",
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.purpleAccent, Colors.pinkAccent],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.person_add,
+                        size: 80,
+                        color: Colors.purpleAccent,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Create Account',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purpleAccent,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Join us today!',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      TextFormField(
+                        controller: _namaTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Full Name",
+                          prefixIcon: const Icon(Icons.person),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        validator: (v) => v != null && v.length >= 3 ? null : "Nama minimal 3 karakter",
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Email",
+                          prefixIcon: const Icon(Icons.email),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        validator: (v) => v != null && v.contains('@') ? null : "Email tidak valid",
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Password",
+                          prefixIcon: const Icon(Icons.lock),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        obscureText: true,
+                        validator: (v) => v != null && v.length >= 6 ? null : "Password minimal 6 karakter",
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _submit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purpleAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  "Register",
+                                  style: TextStyle(fontSize: 18, color: Colors.white),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                TextFormField(
-                  controller: _emailTextboxController,
-                  decoration: const InputDecoration(labelText: "Email"),
-                  validator: (v) => v != null && v.contains('@') ? null : "Email tidak valid",
-                ),
-                TextFormField(
-                  controller: _passwordTextboxController,
-                  decoration: const InputDecoration(labelText: "Password"),
-                  obscureText: true,
-                  validator: (v) => v != null && v.length >= 6 ? null : "Password minimal 6 karakter",
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _onRegistrasi,
-                  child: _isLoading ? const CircularProgressIndicator() : const Text("Registrasi ZAZA"),
-                )
-              ],
+              ),
             ),
           ),
         ),
@@ -62,37 +141,40 @@ class _RegistrasiPageState extends State<RegistrasiPage> {
     );
   }
 
-  void _onRegistrasi() async {
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-
-    final res = await ApiService.registrasi(
-      _namaTextboxController.text.trim(),
-      _emailTextboxController.text.trim(),
-      _passwordTextboxController.text.trim(),
-    );
-
-    setState(() => _isLoading = false);
-    if (res.status == true) {
-      // sukses
+    setState(() {
+      _isLoading = true;
+    });
+    RegistrasiBloc.registrasi(
+      nama: _namaTextboxController.text,
+      email: _emailTextboxController.text,
+      password: _passwordTextboxController.text,
+    ).then((value) {
+      setState(() {
+        _isLoading = false;
+      });
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Sukses"),
-          content: Text(res.data ?? "Registrasi berhasil"),
-          actions: [
-            OutlinedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context); // kembali
-              },
-              child: const Text("OK"),
-            )
-          ],
+        barrierDismissible: false,
+        builder: (buildContext) => SuccessDialog(
+          description: "Registrasi berhasil, silakan login.",
+          onClick: () {
+            Navigator.pop(context);
+          },
         ),
       );
-    } else {
-      showDialog(context: context, builder: (_) => WarningDialog(description: res.data ?? "Registrasi gagal"));
-    }
+    }, onError: (error) {
+      setState(() {
+        _isLoading = false;
+      });
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (buildContext) => WarningDialog(
+          description: "Registrasi gagal: ${error.toString()}",
+        ),
+      );
+    });
   }
 }

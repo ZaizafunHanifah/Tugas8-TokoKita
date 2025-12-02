@@ -1,9 +1,9 @@
 // lib/ui/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:tokokita/ui/registrasi_page.dart';
-import '../services/api_service.dart';
 import '../widgets/warning_dialog.dart';
-import '../model/login.dart';
+import '../bloc/login_bloc.dart';
+import '../helpers/user_info.dart';
 import 'produk_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -20,41 +20,114 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login ZAZA'),
-        leading: const Icon(Icons.login),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _emailTextboxController,
-                  decoration: const InputDecoration(labelText: "Email"),
-                  validator: (v) => v != null && v.contains('@') ? null : "Email tidak valid",
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blueAccent, Colors.lightBlueAccent],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.lock_outline,
+                        size: 80,
+                        color: Colors.blueAccent,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Welcome Back!',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Login to your account',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      TextFormField(
+                        controller: _emailTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Email",
+                          prefixIcon: const Icon(Icons.email),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        validator: (v) => v != null && v.contains('@') ? null : "Email tidak valid",
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Password",
+                          prefixIcon: const Icon(Icons.lock),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        obscureText: true,
+                        validator: (v) => v != null && v.isNotEmpty ? null : "Password harus diisi",
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _onLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  "Login",
+                                  style: TextStyle(fontSize: 18, color: Colors.white),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const RegistrasiPage()));
+                        },
+                        child: const Text(
+                          "Don't have an account? Register here",
+                          style: TextStyle(color: Colors.blueAccent),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                TextFormField(
-                  controller: _passwordTextboxController,
-                  decoration: const InputDecoration(labelText: "Password"),
-                  obscureText: true,
-                  validator: (v) => v != null && v.isNotEmpty ? null : "Password harus diisi",
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _onLogin,
-                  child: _isLoading ? const CircularProgressIndicator() : const Text("Login ZAZA"),
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const RegistrasiPage()));
-                  },
-                  child: const Text("Registrasi ZAZA"),
-                )
-              ],
+              ),
             ),
           ),
         ),
@@ -66,14 +139,20 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final login = await ApiService.login(_emailTextboxController.text.trim(), _passwordTextboxController.text.trim());
-    setState(() => _isLoading = false);
+    try {
+      var login = await LoginApi.connect(_emailTextboxController.text.trim(), _passwordTextboxController.text.trim());
+      setState(() => _isLoading = false);
 
-    if (login.status == true && login.code == 200) {
-      // lanjut ke produk list
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProdukPage()));
-    } else {
-      showDialog(context: context, builder: (_) => WarningDialog(description: "Login gagal"));
+      if (login.status == true && login.code == 200) {
+        await UserInfo().setToken(login.token!);
+        await UserInfo().setUserID(login.userID!);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProdukPage()));
+      } else {
+        showDialog(context: context, builder: (_) => const WarningDialog(description: "Login gagal"));
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      showDialog(context: context, builder: (_) => WarningDialog(description: "Terjadi kesalahan: $e"));
     }
   }
 }

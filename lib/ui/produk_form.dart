@@ -1,7 +1,7 @@
 // lib/ui/produk_form.dart
 import 'package:flutter/material.dart';
 import '../model/produk.dart';
-import '../services/api_service.dart';
+import '../bloc/produk_bloc.dart';
 import '../widgets/warning_dialog.dart';
 
 class ProdukForm extends StatefulWidget {
@@ -15,7 +15,7 @@ class ProdukForm extends StatefulWidget {
 class _ProdukFormState extends State<ProdukForm> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  String judul = "TAMBAH PRODUK ZAZA";
+  String judul = "TAMBAH PRODUK";
   String tombolSubmit = "SIMPAN";
 
   final _kodeProdukTextboxController = TextEditingController();
@@ -26,7 +26,7 @@ class _ProdukFormState extends State<ProdukForm> {
   void initState() {
     super.initState();
     if (widget.produk != null) {
-      judul = "UBAH PRODUK ZAZA";
+      judul = "UBAH PRODUK";
       tombolSubmit = "UBAH";
       _kodeProdukTextboxController.text = widget.produk!.kodeProduk ?? '';
       _namaProdukTextboxController.text = widget.produk!.namaProduk ?? '';
@@ -39,37 +39,113 @@ class _ProdukFormState extends State<ProdukForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text(judul),
-        leading: const Icon(Icons.edit),
+        backgroundColor: Colors.orange,
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _kodeProdukTextboxController,
-                  decoration: const InputDecoration(labelText: "Kode Produk"),
-                  validator: (v) => v != null && v.isNotEmpty ? null : "Kode produk harus diisi",
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.orange, Colors.white],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        widget.produk == null ? Icons.add_box : Icons.edit,
+                        size: 80,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        judul,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      TextFormField(
+                        controller: _kodeProdukTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Product Code",
+                          prefixIcon: const Icon(Icons.code),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        validator: (v) => v != null && v.isNotEmpty ? null : "Kode produk harus diisi",
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _namaProdukTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Product Name",
+                          prefixIcon: const Icon(Icons.label),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        validator: (v) => v != null && v.isNotEmpty ? null : "Nama produk harus diisi",
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _hargaProdukTextboxController,
+                        decoration: InputDecoration(
+                          labelText: "Price",
+                          prefixIcon: const Icon(Icons.attach_money),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (v) => v != null && v.isNotEmpty ? null : "Harga harus diisi",
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _onSubmit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : Text(
+                                  tombolSubmit,
+                                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                TextFormField(
-                  controller: _namaProdukTextboxController,
-                  decoration: const InputDecoration(labelText: "Nama Produk"),
-                  validator: (v) => v != null && v.isNotEmpty ? null : "Nama produk harus diisi",
-                ),
-                TextFormField(
-                  controller: _hargaProdukTextboxController,
-                  decoration: const InputDecoration(labelText: "Harga"),
-                  keyboardType: TextInputType.number,
-                  validator: (v) => v != null && v.isNotEmpty ? null : "Harga harus diisi",
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton(
-                  child: _isLoading ? const CircularProgressIndicator() : Text(tombolSubmit + " ZAZA"),
-                  onPressed: _isLoading ? null : _onSubmit,
-                )
-              ],
+              ),
             ),
           ),
         ),
@@ -81,28 +157,28 @@ class _ProdukFormState extends State<ProdukForm> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final produk = Produk(
+    Produk produk = Produk(
       kodeProduk: _kodeProdukTextboxController.text.trim(),
       namaProduk: _namaProdukTextboxController.text.trim(),
       hargaProduk: int.tryParse(_hargaProdukTextboxController.text.trim()) ?? 0,
     );
 
     if (widget.produk == null) {
-      final res = await ApiService.createProduk(produk);
-      setState(() => _isLoading = false);
-      if (res != null) {
+      try {
+        await ProdukBloc.addProduk(produk: produk);
         Navigator.pop(context, true);
-      } else {
-        showDialog(context: context, builder: (_) => const WarningDialog(description: "Tambah produk gagal"));
+      } catch (e) {
+        showDialog(context: context, builder: (_) => WarningDialog(description: "Tambah produk gagal"));
       }
     } else {
-      final res = await ApiService.updateProduk(widget.produk!.id!, produk);
-      setState(() => _isLoading = false);
-      if (res != null) {
+      produk.id = widget.produk!.id;
+      try {
+        await ProdukBloc.updateProduk(produk: produk);
         Navigator.pop(context, true);
-      } else {
-        showDialog(context: context, builder: (_) => const WarningDialog(description: "Ubah produk gagal"));
+      } catch (e) {
+        showDialog(context: context, builder: (_) => WarningDialog(description: "Ubah produk gagal"));
       }
     }
+    setState(() => _isLoading = false);
   }
 }

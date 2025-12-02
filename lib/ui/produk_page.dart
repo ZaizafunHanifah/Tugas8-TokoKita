@@ -1,9 +1,11 @@
 // lib/ui/produk_page.dart
 import 'package:flutter/material.dart';
 import '../model/produk.dart';
-import '../services/api_service.dart';
+import '../bloc/produk_bloc.dart';
 import 'produk_detail.dart';
 import 'produk_form.dart';
+import '../bloc/logout_bloc.dart';
+import '../ui/login_page.dart';
 
 class ProdukPage extends StatefulWidget {
   const ProdukPage({Key? key}) : super(key: key);
@@ -13,77 +15,201 @@ class ProdukPage extends StatefulWidget {
 }
 
 class _ProdukPageState extends State<ProdukPage> {
-  List<Produk> items = [];
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchProduk();
-  }
-
-  Future<void> fetchProduk() async {
-    setState(() => loading = true);
-    final list = await ApiService.listProduk();
-    setState(() {
-      items = list;
-      loading = false;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('List Produk ZAZA'),
-        leading: const Icon(Icons.store),
+        title: const Text('Product List'),
+        backgroundColor: Colors.teal,
+        elevation: 0,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: GestureDetector(
-              child: const Icon(Icons.add, size: 26.0),
-              onTap: () async {
-                final created = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProdukForm()));
-                if (created == true) {
-                  fetchProduk();
-                } else {
-                  // always refetch in mock too to see updates
-                  fetchProduk();
-                }
-              },
-            ),
-          )
+          IconButton(
+            icon: const Icon(Icons.add, color: Colors.white),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ProdukForm()));
+            },
+          ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: fetchProduk,
-        child: loading
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, idx) {
-                  final p = items[idx];
-                  return GestureDetector(
-                    onTap: () async {
-                      await Navigator.push(context, MaterialPageRoute(builder: (context) => ProdukDetail(produk: p)));
-                      fetchProduk();
-                    },
-                    child: Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: const Icon(Icons.shopping_bag, color: Colors.purple),
-                        title: Text(p.namaProduk ?? "-", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text("Rp ${p.hargaProduk ?? 0}", style: const TextStyle(color: Colors.green)),
-                        trailing: const Icon(Icons.arrow_forward_ios),
+      drawer: Drawer(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.teal, Colors.tealAccent],
+            ),
+          ),
+          child: ListView(
+            children: [
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.store, size: 30, color: Colors.teal),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Toko Kita',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.white),
+                title: const Text('Logout', style: TextStyle(color: Colors.white)),
+                onTap: () async {
+                  await LogoutBloc.logout();
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginPage()));
                 },
               ),
+            ],
+          ),
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.teal, Colors.white],
+          ),
+        ),
+        child: FutureBuilder<List<Produk>>(
+          future: ProdukBloc.getProduks(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text('Error: ${snapshot.error}', style: const TextStyle(fontSize: 16)),
+                  ],
+                ),
+              );
+            }
+            if (!snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                ),
+              );
+            }
+            List<Produk> produks = snapshot.data!;
+            if (produks.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.inventory_2, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No products available',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: produks.length,
+              itemBuilder: (context, index) {
+                Produk produk = produks[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProdukDetail(produk: produk)));
+                  },
+                  child: Card(
+                    elevation: 6,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Colors.white, Colors.tealAccent],
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.teal,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.shopping_bag,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  produk.namaProduk ?? "-",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.teal,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Rp ${produk.hargaProduk ?? 0}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.teal,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ProdukForm()));
+        },
+        backgroundColor: Colors.teal,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

@@ -1,7 +1,7 @@
 // lib/ui/produk_detail.dart
 import 'package:flutter/material.dart';
 import '../model/produk.dart';
-import '../services/api_service.dart';
+import '../bloc/produk_bloc.dart';
 import 'produk_form.dart';
 import 'produk_page.dart';
 import '../widgets/warning_dialog.dart';
@@ -19,52 +19,119 @@ class _ProdukDetailState extends State<ProdukDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Produk ZAZA'),
-        leading: const Icon(Icons.info),
+        title: const Text('Product Detail'),
+        backgroundColor: Colors.green,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.code, color: Colors.purple),
-                        const SizedBox(width: 8),
-                        Text("Kode : ${widget.produk.kodeProduk}", style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-                      ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.green, Colors.white],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(24.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.white, Colors.greenAccent],
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const Icon(Icons.label, color: Colors.purple),
-                        const SizedBox(width: 8),
-                        Text("Nama : ${widget.produk.namaProduk}", style: const TextStyle(fontSize: 18.0)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const Icon(Icons.attach_money, color: Colors.green),
-                        const SizedBox(width: 8),
-                        Text("Harga : Rp. ${widget.produk.hargaProduk}", style: const TextStyle(fontSize: 18.0, color: Colors.green)),
-                      ],
-                    ),
-                  ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.code, color: Colors.white),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              "Code: ${widget.produk.kodeProduk}",
+                              style: const TextStyle(
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.label, color: Colors.white),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              "Name: ${widget.produk.namaProduk}",
+                              style: const TextStyle(
+                                fontSize: 18.0,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.attach_money, color: Colors.white),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              "Price: Rp ${widget.produk.hargaProduk}",
+                              style: const TextStyle(
+                                fontSize: 18.0,
+                                color: Colors.green,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
-            _tombolHapusEdit()
-          ],
+              const SizedBox(height: 40),
+              _tombolHapusEdit()
+            ],
+          ),
         ),
       ),
     );
@@ -72,21 +139,40 @@ class _ProdukDetailState extends State<ProdukDetail> {
 
   Widget _tombolHapusEdit() {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        OutlinedButton(
-          child: const Text("EDIT ZAZA"),
-          onPressed: () async {
-            final changed = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProdukForm(produk: widget.produk)));
-            if (changed == true) {
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ProdukPage()));
-            }
-          },
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              var result = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProdukForm(produk: widget.produk)));
+              if (result == true) {
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ProdukPage()));
+              }
+            },
+            icon: const Icon(Icons.edit, color: Colors.white),
+            label: const Text("Edit", style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
         ),
-        const SizedBox(width: 12),
-        OutlinedButton(
-          child: const Text("DELETE ZAZA"),
-          onPressed: () => confirmHapus(),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => confirmHapus(),
+            icon: const Icon(Icons.delete, color: Colors.white),
+            label: const Text("Delete", style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -100,11 +186,15 @@ class _ProdukDetailState extends State<ProdukDetail> {
           child: const Text("Ya"),
           onPressed: () async {
             Navigator.pop(context); // tutup dialog
-            final ok = await ApiService.deleteProduk(widget.produk.id!);
-            if (ok) {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const ProdukPage()));
-            } else {
-              showDialog(context: context, builder: (BuildContext context) => const WarningDialog(description: "Hapus gagal, silahkan coba lagi"));
+            try {
+              bool result = await ProdukBloc.deleteProduk(id: int.parse(widget.produk.id!));
+              if (result) {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const ProdukPage()));
+              } else {
+                showDialog(context: context, builder: (BuildContext context) => const WarningDialog(description: "Hapus gagal, silahkan coba lagi"));
+              }
+            } catch (e) {
+              showDialog(context: context, builder: (BuildContext context) => WarningDialog(description: "Terjadi kesalahan: $e"));
             }
           },
         ),
