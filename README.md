@@ -11,7 +11,7 @@ TokoKita adalah aplikasi Flutter yang dirancang untuk mengelola produk di sebuah
 Halaman login memungkinkan pengguna untuk masuk ke aplikasi dengan email dan password.
 
 **Proses Login:**
-a. <img src="logininput.png" width="300">
+a. <p align="center"><img src="logininput.png" width="250"></p>
    Menginputkan email dan password di form login.
    - Kode: TextFormField dengan validator untuk email dan password.
    - Contoh input: Email: test@example.com, Password: 123456
@@ -63,10 +63,10 @@ Menampilkan detail produk dan opsi edit/hapus.
 Form untuk menambah produk baru.
 
 **Proses Tambah Produk:**
-a. <img src="tambahprodukinput.png" width="300">
+a. <p align="center"><img src="tambahprodukinput.png" width="250"></p>
    Isi kode produk, nama, harga.
    - Kode: TextFormField dengan validasi tidak kosong.
-b. <img src="tambahprodukoutput.png" width="300">
+b. <p align="center"><img src="tambahprodukoutput.png" width="250"></p>
    Klik "SIMPAN".
    - Kode: Buat objek Produk, panggil `ProdukBloc.addProduk()`.
    - Jika berhasil, kembali ke daftar produk.
@@ -80,7 +80,7 @@ Form untuk mengedit produk.
 **Proses Edit Produk:**
 a. Form diisi dengan data existing.
    - Kode: initState() set controller dengan produk data.
-b. <img src="editprodukoutput.png" width="300">
+b. <p align="center"><img src="editprodukoutput.png" width="250"></p>
    Modifikasi field dan klik "UBAH".
    - Kode: `ProdukBloc.updateProduk()` dengan data baru.
    - Jika berhasil, kembali ke daftar.
