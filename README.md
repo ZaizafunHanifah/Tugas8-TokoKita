@@ -6,12 +6,12 @@ TokoKita adalah aplikasi Flutter yang dirancang untuk mengelola produk di sebuah
 
 ### Halaman Login
 
-![Halaman Login](login.png)
+<img src="login.png" width="300">
 
 Halaman login memungkinkan pengguna untuk masuk ke aplikasi dengan email dan password.
 
 **Proses Login:**
-a. ![Form Login](logininput.png)
+a. <img src="logininput.png" width="300">
    Menginputkan email dan password di form login.
    - Kode: TextFormField dengan validator untuk email dan password.
    - Contoh input: Email: test@example.com, Password: 123456
@@ -22,7 +22,7 @@ b. Klik tombol "Login".
 
 ### Halaman Registrasi
 
-![Halaman Registrasi](register.png)
+<img src="register.png" width="300">
 
 Halaman registrasi untuk membuat akun baru.
 
@@ -36,7 +36,7 @@ b. Klik tombol "Register".
 
 ### Halaman Daftar Produk
 
-![Halaman Daftar Produk](produk.png)
+<img src="produk.png" width="300">
 
 Menampilkan daftar produk dari API.
 
@@ -47,7 +47,7 @@ Menampilkan daftar produk dari API.
 
 ### Halaman Detail Produk
 
-![Halaman Detail Produk](detailproduk.png)
+<img src="detailproduk.png" width="300">
 
 Menampilkan detail produk dan opsi edit/hapus.
 
@@ -58,36 +58,36 @@ Menampilkan detail produk dan opsi edit/hapus.
 
 ### Halaman Form Produk (Tambah)
 
-![Halaman Form Tambah](tambahproduk.png)
+<img src="tambahproduk.png" width="300">
 
 Form untuk menambah produk baru.
 
 **Proses Tambah Produk:**
-a. ![Form Tambah Kosong](tambahprodukinput.png)
+a. <img src="tambahprodukinput.png" width="300">
    Isi kode produk, nama, harga.
    - Kode: TextFormField dengan validasi tidak kosong.
-b. ![Setelah Klik Simpan](tambahprodukoutput.png)
+b. <img src="tambahprodukoutput.png" width="300">
    Klik "SIMPAN".
    - Kode: Buat objek Produk, panggil `ProdukBloc.addProduk()`.
    - Jika berhasil, kembali ke daftar produk.
 
 ### Halaman Form Produk (Edit)
 
-![Halaman Form Edit](editproduk.png)
+<img src="editproduk.png" width="300">
 
 Form untuk mengedit produk.
 
 **Proses Edit Produk:**
 a. Form diisi dengan data existing.
    - Kode: initState() set controller dengan produk data.
-b. ![Setelah Edit](editprodukoutput.png)
+b. <img src="editprodukoutput.png" width="300">
    Modifikasi field dan klik "UBAH".
    - Kode: `ProdukBloc.updateProduk()` dengan data baru.
    - Jika berhasil, kembali ke daftar.
 
 ### Proses Hapus Produk
 
-![Konfirmasi Hapus](hapusproduk.png)
+<img src="hapusproduk.png" width="300">
 
 Proses menghapus produk dari halaman detail.
 
